@@ -2,3 +2,6 @@
 *.pt
 *.h5
 *.onnx
+
+*.ipynb_checkpoints
+*.ipynb
