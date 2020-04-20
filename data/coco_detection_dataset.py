@@ -34,7 +34,7 @@ class COCOAnnotationTransform(object):
     """Transforms a COCO annotation into a Tensor of bbox coords and label index
     Initilized with a dictionary lookup of classnames to indexes
     """
-    def __init__(self, path = '/Users/kehwaweng/Documents/ObjectDetection/torch_ssd_mobilenet/coco_labels.txt'):
+    def __init__(self, path = './coco_labels.txt'):
         self.label_map = self._get_label_map(path)
 
     def __call__(self, target, width, height):
@@ -165,9 +165,9 @@ class COCODetection(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = COCODetection(root = "/Volumes/IPEVO_X0244/coco_dataset/",
+    dataset = COCODetection(root = "./coco_dataset/",
                             image_set = "train2017",
-                            transforms = SSDAugmentation(),
+                            transform = SSDAugmentation(),
                             target_transform = COCOAnnotationTransform())
     loader = DataLoader(dataset= dataset, batch_size = 4, shuffle= True, collate_fn = detection_collate)
 
