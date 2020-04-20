@@ -333,7 +333,7 @@ class RandomSampleCrop(object):
 
                 return current_image, current_boxes, current_labels
 
-def intersect(box_a, box_b):
+def aug_intersect(box_a, box_b):
     max_xy = np.minimum(box_a[:, 2:], box_b[2:])
     min_xy = np.maximum(box_a[:, :2], box_b[:2])
     inter = np.clip((max_xy - min_xy), a_min=0, a_max=np.inf)
@@ -342,7 +342,7 @@ def intersect(box_a, box_b):
 
 def jaccard_numpy(box_a, box_b):
     """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
-    is simply the intersection over union of two boxes.
+    is simply the aug_intersection over union of two boxes.
     E.g.:
         A ∩ B / A ∪ B = A ∩ B / (area(A) + area(B) - A ∩ B)
     Args:
@@ -351,7 +351,7 @@ def jaccard_numpy(box_a, box_b):
     Return:
         jaccard overlap: Shape: [box_a.shape[0], box_a.shape[1]]
     """
-    inter = intersect(box_a, box_b)
+    inter = aug_intersect(box_a, box_b)
     area_a = ((box_a[:, 2]-box_a[:, 0]) *
               (box_a[:, 3]-box_a[:, 1]))  # [A,B]
     area_b = ((box_b[2]-box_b[0]) *
@@ -401,7 +401,7 @@ class SubtractMeans(object):
 
 
 if __name__ == '__main__':
-    aug = SSDAugmentation(size = 512, mean = (0, 0, 0))
+    aug = SSDAugmentation(img_size = 512, mean = (0, 0, 0))
     print("finish create aug object")
 
 

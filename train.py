@@ -17,22 +17,20 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 
+GPU = False
+if torch.cuda.is_available():
+    GPU = True
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-def weights_init(m):
-    for key in m.state_dict():
-        if key.split('.')[-1] == 'weight':
-            if 'conv' in key:
-                init.kaiming_normal(m.state_dict()[key], mode='fan_out')
-            if 'bn' in key:
-                m.state_dict()[key][...] = 1
-        elif key.split('.')[-1] == 'bias':
-            m.state_dict()[key][...] = 0
+
 
 def save_model(save_path, model, epoch):
     if not os.path.exists(save_path):
         os.makedirs( save_path)
     model_name = "model_weights_checkpoint_epoch_" + str(epoch) + ".pt"
     torch.save( model.state_dict(), os.path.join(save_path, model_name))
+
+
 
 def train(args):
     create_time = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
@@ -51,6 +49,12 @@ def train(args):
                                       width_mult = args.width_multi,  
                                       use_batch_norm = True)
     print("builded ssd module")
+
+    if GPU:
+        import torch.backends.cudnn as cudnn
+        model.cuda()
+        ssd.cuda()
+        cudnn.benchmark = True
 
     optimizer = optim.Adam(ssd.parameters(),
                            lr = args.learning_rate, 
@@ -71,7 +75,7 @@ def train(args):
     train_dataset = COCODetection(root = args.root,
                                   image_set = args.train_image_folder, 
                                   transform = SSDAugmentation(img_size = args.image_size),
-                                  target_transform = COCOAnnotationTransform())
+                                  target_transform = COCOAnnotationTransform(args.coco_labels))
 
     train_dataloader = DataLoader(dataset = train_dataset, 
                                   batch_size = args.batch_size,
@@ -92,12 +96,18 @@ def train(args):
         ssd.train()
         mean_loss_conf = 0
         mean_loss_loc = 0
+        inference_count = 0
 
         with tqdm(total = n_train, desc = f"{epoch + 1} / {args.epochs}", unit = 'img') as pbar:
             for img, target in train_dataloader:
                 
-                img = Variable(img)
-                target = [Variable(anno) for anno in target]
+                if GPU:
+                    img = Variable(img.cuda())
+                    target = [Variable(anno.cuda()) for anno in target]
+                else:
+                    img = Variable(img)
+                    target = [Variable(anno) for anno in target]
+                    
                 optimizer.zero_grad()
 
                 inference = ssd(img)
@@ -118,19 +128,22 @@ def train(args):
                 # # clip gradient
                 # # clip_grad_norm_(net.parameters(), 0.1)
 
-                # optimizer.step()
+                optimizer.step()
                 pbar.update( img.shape[0])
                 global_step += 1
-                
+                inference_count += img.shape[0]
+
+                if inference_count > n_train: break
 
         save_model(save_folder_path, ssd, epoch)
+    writer.close()
 
         # with tqdm(total = n_val, desc = "Validation", unit = "img", leave = False) as vpbar:
         #     for i in range(n_val):
         #         img = val_dataset.pull_img(i)
 
 
-    writer.close()
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='single shot multibox detector with mobilenet v2')
@@ -242,6 +255,24 @@ if __name__ == '__main__':
     args = parse_args()
     train(args)
     print("done")
+
+
+
+
+'''
+commend log 
+0417
+python train.py --root /Volumes/IPEVO_X0244/coco_dataset/
+
+
+
+'''
+
+
+
+
+
+
 
 
 

@@ -94,7 +94,11 @@ class MultiBoxLoss(nn.Module):
                   loc_t,
                   conf_t,
                   idx)
-   
+            
+        if torch.cuda.is_available():
+            torch.set_default_tensor_type('torch.cuda.FloatTensor')
+            loc_t = loc_t.cuda()
+            conf_t = conf_t.cuda()
         # wrap targets
         loc_t = Variable(loc_t, requires_grad = False)
         conf_t = Variable(conf_t, requires_grad = False)
