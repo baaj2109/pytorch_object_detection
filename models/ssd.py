@@ -19,7 +19,8 @@ class SSD(nn.Module):
                  conf_layers,
                  source_layer_indexes,
                  n_classes,
-                 dropout_ratio = 0.1):
+                 dropout_ratio = 0.1,
+                 is_train = True):
         super(SSD, self).__init__()       
         '''
         Args:
@@ -37,8 +38,9 @@ class SSD(nn.Module):
         self.dropout = nn.Dropout(p = dropout_ratio, inplace = False)
         self.loc_layers = loc_layers
         self.conf_layers = conf_layers
-        
-        self.softmax = nn.Softmax()
+        self.is_train = is_train
+        # self.softmax = nn.Softmax()
+        self.sigmoid = nn.Sigmoid()
         
     def forward(self, x):
         loc = []
@@ -102,11 +104,19 @@ class SSD(nn.Module):
         
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
-       
-        output = (
-            loc.view(loc.size(0), -1, 4), 
-            conf.view(conf.size(0), -1, self.n_classes)
-        )
+
+        if self.is_train:
+            output = (
+                loc.view(loc.size(0), -1, 4), 
+                conf.view(conf.size(0), -1, self.n_classes)
+            )
+        else:
+            output = (
+                loc,
+                torch.max(self.sigmoid(conf.view(-1, self.n_classes)), dim = 1)[0],
+                torch.max(self.sigmoid(conf.view(-1, self.n_classes)), dim = 1)[1],
+            )
+            
         return output
 
 

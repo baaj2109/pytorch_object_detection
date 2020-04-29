@@ -26,8 +26,6 @@ COCO_300 = {
 }
 
 
-
-
 MOBILEV2_512 = {
     "feature_maps": [32, 16, 8, 4, 2, 1],
     "min_dim": 512,
@@ -38,3 +36,16 @@ MOBILEV2_512 = {
     "variance": [0.1, 0.2],
     "clip": True,
 }
+
+
+MOBILEV2_300 = {
+    'feature_maps': [19, 10, 5, 3, 2, 1],
+    'min_dim': 300,
+    'steps': [8, 16, 32, 64, 100, 300],
+    'min_sizes': [21, 45, 99, 153, 207, 261],
+    'max_sizes': [None, 99, 153, 207, 261, 315],
+    'aspect_ratios': [[2], [2, 3], [2, 3], [2, 3], [2,3], [2,3]],
+    'variance': [0.1, 0.2],
+    'clip': True,
+}
+

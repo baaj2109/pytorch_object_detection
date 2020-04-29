@@ -24,7 +24,7 @@ def _make_divisible(v, divisor, min_value=None):
     return new_v
 
 
-def ConvbBNReLU(in_channels, out_channels, stride, use_batch_norm = True):
+def ConvbBNReLU6(in_channels, out_channels, stride, use_batch_norm = True):
     if use_batch_norm:
         return nn.Sequential(
             nn.Conv2d(in_channels= in_channels,
@@ -34,7 +34,7 @@ def ConvbBNReLU(in_channels, out_channels, stride, use_batch_norm = True):
                       padding= 1,
                       bias= False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace = False)
+            nn.ReLU6(inplace = False)
         )
     else:
         return nn.Sequential(
@@ -44,7 +44,7 @@ def ConvbBNReLU(in_channels, out_channels, stride, use_batch_norm = True):
                       stride= stride,
                       padding= 1,
                       bias= False),
-            nn.ReLU(inplace= False)
+            nn.ReLU6(inplace= False)
         )
 
 
@@ -58,7 +58,7 @@ def conv_1x1_bn(in_channels, out_channels, use_batch_norm = True):
                       padding = 0,
                       bias = False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace = False)
+            nn.ReLU6(inplace = False)
         )
     else:
         return nn.Sequential(
@@ -68,7 +68,7 @@ def conv_1x1_bn(in_channels, out_channels, use_batch_norm = True):
                       stride = 1,
                       padding = 0,
                       bias = False),
-            nn.ReLU(inplace = False)
+            nn.ReLU6(inplace = False)
         )
 
 
@@ -88,7 +88,7 @@ class InvertedResidual(nn.Module):
                     # dw
                     nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups = hidden_dim, bias = False),
                     nn.BatchNorm2d(hidden_dim),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # pw-linear
                     nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias = False),
                     nn.BatchNorm2d(out_channels),
@@ -97,7 +97,7 @@ class InvertedResidual(nn.Module):
                 self.conv = nn.Sequential(
                     # dw
                     nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups = hidden_dim, bias = False),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # pw-linear
                     nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias = False),
                 )
@@ -107,11 +107,11 @@ class InvertedResidual(nn.Module):
                     # pw
                     nn.Conv2d(in_channels, hidden_dim, 1, 1, 0, bias = False),
                     nn.BatchNorm2d(hidden_dim),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # dw
                     nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups = hidden_dim, bias = False),
                     nn.BatchNorm2d(hidden_dim),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # pw-linear
                     nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias = False),
                     nn.BatchNorm2d(out_channels),
@@ -120,10 +120,10 @@ class InvertedResidual(nn.Module):
                 self.conv = nn.Sequential(
                     # pw
                     nn.Conv2d(in_channels, hidden_dim, 1, 1, 0, bias = False),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # dw
                     nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups = hidden_dim, bias = False),
-                    nn.ReLU(inplace = False),
+                    nn.ReLU6(inplace = False),
                     # pw-linear
                     nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias = False),
                 )
@@ -177,7 +177,7 @@ class mobilenetv2(nn.Module):
                              "or a 4-element list, got {}".format(inverted_residual_setting))
         
         self.extract_feature = []
-        self.extract_feature.append( ConvbBNReLU(image_channels, input_channel, stride = 2))
+        self.extract_feature.append( ConvbBNReLU6(image_channels, input_channel, stride = 2))
         
         for t, c, n, s in inverted_residual_setting:
             output_channel = _make_divisible(c * width_mult, round_nearest)

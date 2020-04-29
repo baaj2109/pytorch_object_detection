@@ -94,7 +94,7 @@ class MultiBoxLoss(nn.Module):
                   loc_t,
                   conf_t,
                   idx)
-            
+
         if torch.cuda.is_available():
             torch.set_default_tensor_type('torch.cuda.FloatTensor')
             loc_t = loc_t.cuda()
@@ -120,14 +120,13 @@ class MultiBoxLoss(nn.Module):
         conf_tt[conf_tt_index] = 1
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_tt)
         # loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1, 1))
-        # loss_c = log_sum_exp(batch_conf) - batch_conf.gather(0, conf_t.view(-1, 1))
 
         # Hard Negative Mining
         loss_c = loss_c.view( pos.size()[0], pos.size()[1])
         loss_c[pos] = 0 # filter out pos boxes for now
         loss_c = loss_c.view(num_batch, -1)
-        _,loss_idx = loss_c.sort(1, descending = True)
-        _,idx_rank = loss_idx.sort(1)
+        _, loss_idx = loss_c.sort(1, descending = True)
+        _, idx_rank = loss_idx.sort(1)
         num_pos = pos.long().sum(1, keepdim = True)
         num_neg = torch.clamp( self.negpos_ratio * num_pos, max = pos.size(1) - 1)
         neg = idx_rank < num_neg.expand_as(idx_rank)

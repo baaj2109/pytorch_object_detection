@@ -34,8 +34,9 @@ class COCOAnnotationTransform(object):
     """Transforms a COCO annotation into a Tensor of bbox coords and label index
     Initilized with a dictionary lookup of classnames to indexes
     """
-    def __init__(self, path = './coco_labels.txt'):
-        self.label_map = self._get_label_map(path)
+    def __init__(self, path = './coco_label.txt'):
+        pass
+        # self.label_map = self._get_label_map(path)
 
     def __call__(self, target, width, height):
         """
@@ -53,14 +54,14 @@ class COCOAnnotationTransform(object):
                 bbox = obj['bbox']
                 bbox[2] += bbox[0]
                 bbox[3] += bbox[1]
-                label_idx = self.label_map[obj['category_id']] - 1
+                # label_idx = self.label_map[obj['category_id']] - 1
+                label_idx = obj['category_id']
                 final_box = list(np.array(bbox)/scale)
                 final_box.append(label_idx)
                 res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx]
             else:
                 pass
                 # print("no bbox error!")
-
         return res 
     
     def _get_label_map(self, label_file):
@@ -146,9 +147,12 @@ class COCODetection(Dataset):
         """
         img_id = self.ids[index]
         path = self.coco.loadImgs(img_id)[0]['file_name']
-        return cv2.imread(os.path.join(self.image_folder, path), cv2.IMREAD_COLOR)
+        img = cv2.imread(os.path.join(self.image_folder, path))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # img, _, _ = self.transform(img, None, None)
+        return img
 
-    def pull_anno(self, index):
+    def get_annotation(self, index, width, height):
         '''Returns annotation of image at certain index
         Argument:
             index (int): index of img to get annotation of
@@ -158,9 +162,9 @@ class COCODetection(Dataset):
         '''
         img_id = self.ids[index]
         ann_ids = self.coco.getAnnIds(imgIds = img_id)
+        target = self.coo.loadAnns(ann_ids)
         target = self.target_transform(target, width, height)
-        return self.coco.loadAnns(ann_ids)
-
+        return target
 
 
 

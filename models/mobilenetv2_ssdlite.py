@@ -13,12 +13,14 @@ def SeperableConv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padd
                   kernel_size = kernel_size,
                   groups = in_channels,
                   stride = stride,
-                  padding = padding),
+                  padding = padding,
+                  bias = False),
         nn.BatchNorm2d(in_channels),
-        nn.ReLU(inplace = False),
+        nn.ReLU6(inplace = False),
         nn.Conv2d(in_channels = in_channels, 
                   out_channels = out_channels,
-                  kernel_size = 1),
+                  kernel_size = 1,
+                  bias = True),
     )
 
 class liteConv(nn.Module):
@@ -30,15 +32,15 @@ class liteConv(nn.Module):
             # pw
             nn.Conv2d(in_channels, hidden_dim, 1, 1, 0, bias = False),
             nn.BatchNorm2d(hidden_dim),
-            nn.ReLU(inplace = False),
+            nn.ReLU6(inplace = False),
             # dw
             nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups = hidden_dim, bias = False),
             nn.BatchNorm2d(hidden_dim),
-            nn.ReLU(inplace = False),
+            nn.ReLU6(inplace = False),
             # pw-linear
             nn.Conv2d(hidden_dim, out_channels, 1, 1, 0, bias = False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace = False)
+            nn.ReLU6(inplace = False)
         )
     
     def forward(self, x):
@@ -51,7 +53,8 @@ def add_extras():
         liteConv(1280, 512, stride = 2),
         liteConv(512,  256, stride = 2),
         liteConv(256,  256, stride = 2),
-        liteConv(256,   64, stride = 2)
+        liteConv(256,  128, stride = 2)
+        # liteConv(256,   64, stride = 2)
     ])
     return extras_layers
 
@@ -61,27 +64,31 @@ def multibox(n_classes, width_mult = 1.0,):
     '''
     loc_layers = nn.ModuleList([
         SeperableConv2d(in_channels = round(576 * width_mult),
-                        out_channels = 6 * 4,
+                        # out_channels = 6 * 4,
+                        out_channels = 3 * 4,
                         kernel_size = 3, 
                         padding = 1),
         SeperableConv2d(in_channels = 1280, out_channels = 6 * 4, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 512,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        nn.Conv2d(in_channels = 64, out_channels = 6 * 4, kernel_size = 1),
+        SeperableConv2d(in_channels = 128,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        # nn.Conv2d(in_channels = 64, out_channels = 6 * 4, kernel_size = 1),
     ])
     
     
     conf_layers = nn.ModuleList([
         SeperableConv2d(in_channels = round(576 * width_mult),
-                        out_channels = 6 * n_classes, 
+                        # out_channels = 6 * n_classes, 
+                        out_channels = 3 * n_classes, 
                         kernel_size = 3, 
                         padding = 1),
         SeperableConv2d(in_channels = 1280, out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 512,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
         SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        nn.Conv2d(in_channels = 64, out_channels = 6 * n_classes, kernel_size = 1),
+        SeperableConv2d(in_channels = 128,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        # nn.Conv2d(in_channels = 64, out_channels = 6 * n_classes, kernel_size = 1),
     ])  
     return loc_layers, conf_layers
 

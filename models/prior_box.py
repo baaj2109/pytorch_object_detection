@@ -45,7 +45,7 @@ class PriorBox(object):
 
                 # aspect_ratio: 1
                 # rel size: sqrt(s_k * s_(k+1))
-                if self.max_sizes:
+                if self.max_sizes[k] != None:
                     s_k_prime = sqrt(s_k * (self.max_sizes[k] / self.image_size))
                     mean += [cx, cy, s_k_prime, s_k_prime]
 
@@ -78,6 +78,11 @@ if __name__ == '__main__':
     output = priorbox.forward()
     print("output shape: ",output.shape)
 
+    '''save priors to binary file 
+    '''
+    # np_priors = priors.detach().numpy()
+    # with open("./priors.dat", "wb") as binfile:
+    #     binfile.write(np_priors.tobytes())
 
 
 
