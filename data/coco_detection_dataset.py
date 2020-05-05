@@ -52,11 +52,13 @@ class COCOAnnotationTransform(object):
         for obj in target:
             if 'bbox' in obj:
                 bbox = obj['bbox']
-                bbox[2] += bbox[0]
-                bbox[3] += bbox[1]
+                # bbox[2] += bbox[0]
+                # bbox[3] += bbox[1]
+                loc = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3]+ bbox[1]]
                 # label_idx = self.label_map[obj['category_id']] - 1
                 label_idx = obj['category_id']
-                final_box = list(np.array(bbox)/scale)
+                # final_box = list(np.array(bbox) / scale)
+                final_box = list( np.array(loc) / scale)
                 final_box.append(label_idx)
                 res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx]
             else:
@@ -145,7 +147,7 @@ class COCODetection(Dataset):
         Return:
             cv2 img
         """
-        img_id = self.ids[index]
+        img_id = self.ids[idx]
         path = self.coco.loadImgs(img_id)[0]['file_name']
         img = cv2.imread(os.path.join(self.image_folder, path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -162,7 +164,7 @@ class COCODetection(Dataset):
         '''
         img_id = self.ids[index]
         ann_ids = self.coco.getAnnIds(imgIds = img_id)
-        target = self.coo.loadAnns(ann_ids)
+        target = self.coco.loadAnns(ann_ids)
         target = self.target_transform(target, width, height)
         return target
 

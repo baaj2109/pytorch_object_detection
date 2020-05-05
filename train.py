@@ -4,7 +4,7 @@ import argparse
 import time
 from tqdm import tqdm
 import tensorflow as tf
-
+import cv2
 
 from data import COCODetection, SSDAugmentation, COCOAnnotationTransform, detection_collate, BaseTransform
 from loss import MultiBoxLoss
@@ -132,7 +132,8 @@ def train(args):
 
     train_dataset = COCODetection(root = args.root,
                                   image_set = args.train_image_folder, 
-                                  transform = SSDAugmentation(img_size = args.image_size),
+                                  # transform = SSDAugmentation(img_size = args.image_size),
+                                  transform = BaseTransform(img_size = args.image_size),
                                   target_transform = COCOAnnotationTransform(args.coco_label))
 
     train_dataloader = DataLoader(dataset = train_dataset, 
@@ -199,10 +200,11 @@ def train(args):
         ssd.eval()
         val_mean_loss_loc = 0
         val_mean_loss_conf = 0
-        with tqdm(total = n_val, desc = "Validation", unit = "img", leave = False) as vpbar:
+        with tqdm(total = n_val, desc = "Validation", unit = "img") as vpbar:
             for i in range(n_val):
                 img = val_dataset.get_image(i)
-                height, width, _ = img.shape()
+                img = cv2.resize(img,(args.image_size, args.image_size))
+                height, width, _ = img.shape
                 target = val_dataset.get_annotation(i, width, height)
 
                 if GPU:
@@ -215,19 +217,19 @@ def train(args):
                     target = torch.FloatTensor(target).unsqueeze(0)
 
                 inference = ssd(img)
-                loss_loc, loss_conf = criterion(inference, prior, target)
+                loss_loc, loss_conf = criterion(inference, priors, target)
                 
                 val_mean_loss_loc += float(loss_loc)
                 val_mean_loss_conf += float(loss_conf)
-                vpbar.set_postfix( **{'Validation location loss': float(loss_loc),
-                                     'confidnece loss': flaot(loss_conf)})
+                vpbar.set_postfix( **{'location loss': float(loss_loc),
+                                      'confidnece loss': float(loss_conf)})
                 vpbar.update(1)
 
             vpbar.set_postfix( **{'Validation location loss': float(val_mean_loss_loc / n_val),
                                  'confidnece loss': float(val_mean_loss_conf / n_val)})
             writer.add_scalar('Test/location_loss', float(val_mean_loss_loc / n_val), val_global_step)
             writer.add_scalar('Test/confidence_loss', float(val_mean_loss_conf/ n_val), val_global_step)
-
+        val_global_step += 1
         save_model(save_folder_path, ssd, epoch)
     writer.close()
 
@@ -358,13 +360,4 @@ if __name__ == '__main__':
     train(args)
     print("done")
 
-
-
-
-'''
-commend log 
-0417
-python train.py --root /Volumes/IPEVO_X0244/coco_dataset/
-
-'''
 

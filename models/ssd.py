@@ -49,6 +49,9 @@ class SSD(nn.Module):
         start_layer_index = 0
         header_index = 0
 
+        x = x * 2 / 255.0
+        x = x - 1
+
         # extract featuremap from layer which inside base network, according source layer index
         # save layer output to source list
         for end_layer_index in self.source_layer_indexes:
@@ -116,7 +119,7 @@ class SSD(nn.Module):
                 torch.max(self.sigmoid(conf.view(-1, self.n_classes)), dim = 1)[0],
                 torch.max(self.sigmoid(conf.view(-1, self.n_classes)), dim = 1)[1],
             )
-            
+
         return output
 
 
