@@ -134,10 +134,11 @@ class COCODetection(Dataset):
             target = self.target_transform(target, width, height)
         if self.transform is not None:
             target = np.array(target)
-            img, boxes, labels = self.transform(img, 
+            img, target, labels = self.transform(img, 
                                                 target[:, :4],
                                                 target[:, 4])
-        
+            target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
+            
         return torch.from_numpy(img.transpose(2, 0, 1)), target, height, width
 
     def get_image(self, idx):

@@ -225,7 +225,7 @@ def train(args):
                                       'confidnece loss': float(loss_conf)})
                 vpbar.update(1)
 
-            vpbar.set_postfix( **{'Validation location loss': float(val_mean_loss_loc / n_val),
+            vpbar.set_postfix( **{'location loss': float(val_mean_loss_loc / n_val),
                                  'confidnece loss': float(val_mean_loss_conf / n_val)})
             writer.add_scalar('Test/location_loss', float(val_mean_loss_loc / n_val), val_global_step)
             writer.add_scalar('Test/confidence_loss', float(val_mean_loss_conf/ n_val), val_global_step)
@@ -360,4 +360,6 @@ if __name__ == '__main__':
     train(args)
     print("done")
 
+
+    
 
