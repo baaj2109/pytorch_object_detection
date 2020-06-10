@@ -1,5 +1,5 @@
 /runs
-/experience
+/experience*
 *.pt
 *.h5
 *.onnx

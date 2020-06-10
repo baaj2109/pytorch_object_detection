@@ -1,0 +1,198 @@
+1, toilet paper
+2, helmet
+3, cat
+4, headphone
+5, fire hydrant
+6, tree
+7, window
+8, pen
+9, microwave
+10, mountain
+11, paintbrush
+12, butterfly
+13, flower
+14, sunglasses
+15, lamp
+16, toaster
+17, fork
+18, wardrobe
+19, shirts
+20, basket
+21, carpet
+22, fireplace
+23, potted plant
+24, pillow
+25, picture frame
+26, bench
+27, piano
+28, musical keyboard
+29, stool
+30, chandelier
+31, cupboard
+32, door
+33, flag
+34, book
+35, guitar
+36, couch
+37, table
+38, poster
+39, bed
+40, mattress
+41, bottle
+42, clock
+43, sculpture
+44, blanket
+45, car
+46, balloon
+47, shoes
+48, bulb
+49, ocean
+50, ship
+51, fire extinguisher
+52, cradle
+53, power socket
+54, ashtray
+55, violin
+56, box
+57, cup
+58, calendar
+59, dog
+60, paper clip
+61, racket
+62, projector
+63, microphone
+64, calculator
+65, rocking chair
+66, desk
+67, laptop
+68, aircraft
+69, eraser
+70, coffeepot
+71, teapot
+72, eye glasses
+73, vacuum cleaner
+74, pilow
+75, flower pot
+76, globe
+77, chair
+78, curtain
+79, vase
+80, speaker
+81, gas stove
+82, candle
+83, candlestick
+84, whiteboard
+85, mailbox
+86, stair
+87, sconce
+88, camera
+89, chickens
+90, trash can
+91, mechanical fan
+92, tissue
+93, sheep
+94, hair dryer
+95, comb
+96, duck
+97, folder
+98, keyboard
+99, telephone
+100, jar
+101, paint pot
+102, coffee maker
+103, spoon
+104, tablet computer
+105, stapler
+106, oven
+107, bowl
+108, glass
+109, knife
+110, plate
+111, placemat
+112, sink
+113, fruits
+114, apple
+115, napkin
+116, dishwasher
+117, surfboard
+118, ladder
+119, treadmill
+120, hot dog
+121, cosmetics
+122, tray
+123, bread
+124, frisbee
+125, soap
+126, tv
+127, doll
+128, snowboard
+129, backpack
+130, cell phone
+131, mouse
+132, pants
+133, bookcase
+134, air conditioner
+135, remote
+136, water dispenser
+137, toilet
+138, wheel chair
+139, pans
+140, showerhead
+141, envelope
+142, kettle
+143, map
+144, cuo
+145, tablecloth
+146, baseball glove
+147, ball
+148, truck
+149, tie
+150, bird
+151, document camera
+152, ruler
+153, music stand
+154, skateboard
+155, towl
+156, train
+157, umbrella
+158, broom
+159, cutting board
+160, kite
+161, watch
+162, flashlight
+163, slipper
+164, hat
+165, scissors
+166, bathtub
+167, towel
+168, faucet
+169, tumble dryer
+170, easel
+171, washing machine
+172, briefcase
+173, sewing maching
+174, banana
+175, ring
+176, hamburger
+177, toothpaste
+178, toothbrush
+179, bicycle
+180, pencil case
+181, salad
+182, bags
+183, pizza
+184, refrigerator
+185, horse
+186, christmas tree
+187, mirror
+188, chopsticks
+189, blender
+190, mop
+191, cow
+192, baseball bat
+193, cake
+194, palette
+195, goose
+196, luggagecase
+197, hanger
+198, dumbbell

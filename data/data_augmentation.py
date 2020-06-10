@@ -33,7 +33,7 @@ class SSDAugmentation(object):
             RandomMirror(),
             ToPercentCoords(),
             Resize(self.img_size),
-            SubtractMeans(self.mean)
+            # SubtractMeans(self.mean)
         ])
 
     def __call__(self, img, boxes, labels):
@@ -364,10 +364,8 @@ class RandomMirror(object):
         _, width, _ = image.shape
         if random.randint(0, 1):
             image = image[:, ::-1]
-            tmp = boxes.copy()
-            # boxes[:, 0::2] = width - boxes[:, 2::-2]
-            boxes[:, 0] = width - tmp[:, 2]
-            boxes[:, 2] = width - tmp[:, 0]
+            boxes = boxes.copy()
+            boxes[:, 0::2] = width - boxes[:, 2::-2]
         return image, boxes, classes
 
 

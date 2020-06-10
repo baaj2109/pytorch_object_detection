@@ -132,8 +132,8 @@ def train(args):
 
     train_dataset = COCODetection(root = args.root,
                                   image_set = args.train_image_folder, 
-                                  # transform = SSDAugmentation(img_size = args.image_size),
-                                  transform = BaseTransform(img_size = args.image_size),
+                                  transform = SSDAugmentation(img_size = args.image_size),
+                                  # transform = BaseTransform(img_size = args.image_size),
                                   target_transform = COCOAnnotationTransform(args.coco_label))
 
     train_dataloader = DataLoader(dataset = train_dataset, 
@@ -359,7 +359,4 @@ if __name__ == '__main__':
     args = parse_args()
     train(args)
     print("done")
-
-
-    
 

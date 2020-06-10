@@ -7,7 +7,23 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
-from .data_augmentation import SSDAugmentation
+
+
+
+def base_transform(image, size, mean ):
+    x = cv2.resize(image, (size, size)).astype(np.float32)
+    # x -= mean
+    x = x.astype(np.float32)
+    return x
+
+
+class BaseTransform(object):
+    def __init__(self, img_size = 300, img_mean = (0, 0, 0)):
+        self.img_size = img_size
+        self.img_mean = np.array(img_mean, dtype=np.float32)
+
+    def __call__(self, image, boxes = None, labels = None):
+        return base_transform(image, self.img_size, self.img_mean), boxes, labels
 
 
 def detection_collate(batch):
@@ -30,13 +46,12 @@ def detection_collate(batch):
 
 
 
-class COCOAnnotationTransform(object):
+class customAnnotationTransform(object):
     """Transforms a COCO annotation into a Tensor of bbox coords and label index
     Initilized with a dictionary lookup of classnames to indexes
     """
-    def __init__(self, path = './coco_label.txt'):
+    def __init__(self,):
         pass
-        # self.label_map = self._get_label_map(path)
 
     def __call__(self, target, width, height):
         """
@@ -52,36 +67,23 @@ class COCOAnnotationTransform(object):
         for obj in target:
             if 'bbox' in obj:
                 bbox = obj['bbox']
-                # bbox[2] += bbox[0]
-                # bbox[3] += bbox[1]
                 loc = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3]+ bbox[1]]
-                # label_idx = self.label_map[obj['category_id']] - 1
+                
                 label_idx = obj['category_id']
-                # final_box = list(np.array(bbox) / scale)
+                
                 final_box = list( np.array(loc) / scale)
                 final_box.append(label_idx)
                 res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx]
-            else:
-                pass
-                # print("no bbox error!")
+
         return res 
-    
-    def _get_label_map(self, label_file):
-        label_map = {}
-        labels = open(label_file, 'r')
-        for line in labels:
-            ids = line.split(',')
-            label_map[int(ids[0])] = int(ids[1])
-        return label_map
 
 
-
-class COCODetection(Dataset):
+class customDetection(Dataset):
     def __init__(self,
-                 root = "./coco_dataset/",
-                 image_set = "train2017",
-                 transform = SSDAugmentation(), 
-                 target_transform = COCOAnnotationTransform()):
+                 root = "./image_folder",
+                 json_path = "./annotation.json",
+                 transform = None, 
+                 target_transform = None):
         """COCO datset for object detection 
         Args:
             root (str): path to coco dataset folder, all coco folder under this path
@@ -90,10 +92,7 @@ class COCODetection(Dataset):
             target_transform (object) : function for process target bbox and label
         """
         self.root = root
-        self.image_folder = os.path.join( root, image_set)
-        self.coco = COCO(annotation_file= os.path.join(root,
-                                                       "annotations_2017",
-                                                       "instances_{}.json".format(image_set)))
+        self.coco = COCO(annotation_file= json_path)
         self.ids = list(self.coco.imgToAnns.keys())
         self.transform = transform
         self.target_transform = target_transform
@@ -111,7 +110,25 @@ class COCODetection(Dataset):
     
     def __len__(self): 
         return len(self.ids)
-    
+
+
+    def get_class_number(self):
+        return len(self.coco.cats)
+
+
+    def get_class_map(self):
+
+        save_path = os.path.join( os.getcwd(), "label_map.txt")
+
+
+        print(f"save class map file to { save_path }")
+        with open( save_path, "w") as writefile:
+            for key in self.coco.cats.keys():
+                id_ = self.coco.cats[key]["id"]
+                name = self.coco.cats[key]['name']
+                print(f"{id_}, {name}", file = writefile)
+        
+
     def pull_item(self, idx):
         """
         Args:
@@ -122,9 +139,8 @@ class COCODetection(Dataset):
         """
         img_id = self.ids[idx]
         target = self.coco.imgToAnns[img_id]
-#         ann_ids = self.coco.getAnnIds(img_id)
-#         target = self.coco.loadAnns(ann_ids)
-        img_path = os.path.join(self.image_folder, self.coco.loadImgs(img_id)[0]['file_name'])
+
+        img_path = os.path.join(self.root, self.coco.loadImgs(img_id)[0]['file_name'])
         assert os.path.exists(img_path), "loading image error"
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -150,7 +166,7 @@ class COCODetection(Dataset):
         """
         img_id = self.ids[idx]
         path = self.coco.loadImgs(img_id)[0]['file_name']
-        img = cv2.imread(os.path.join(self.image_folder, path))
+        img = cv2.imread(os.path.join(self.root, path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # img, _, _ = self.transform(img, None, None)
         return img
@@ -170,12 +186,12 @@ class COCODetection(Dataset):
         return target
 
 
-
 if __name__ == '__main__':
-    dataset = COCODetection(root = "./coco_dataset/",
-                            image_set = "train2017",
-                            transform = SSDAugmentation(),
-                            target_transform = COCOAnnotationTransform())
+    
+    dataset = customDetection(root = "/Users/kehwaweng/Documents/imageCrawler/Image-Downloader/",
+                              json_path = "/Users/kehwaweng/Documents/imageCrawler/Image-Downloader/few_sample/few_sample_dataset.json",
+                              transform = BaseTransform(img_size = 300),
+                              target_transform = CustomAnnotationTransform())
     loader = DataLoader(dataset= dataset, batch_size = 4, shuffle= True, collate_fn = detection_collate)
 
     for img, target, in loader:
@@ -183,8 +199,5 @@ if __name__ == '__main__':
         for i,t in enumerate(target):
             print(f"{i} of {len(target)} targets with shape: {t.shape}")
         break
-
-
-
 
 
