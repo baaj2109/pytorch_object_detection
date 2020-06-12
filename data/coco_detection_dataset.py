@@ -52,12 +52,10 @@ class COCOAnnotationTransform(object):
         for obj in target:
             if 'bbox' in obj:
                 bbox = obj['bbox']
-                # bbox[2] += bbox[0]
-                # bbox[3] += bbox[1]
                 loc = [bbox[0], bbox[1], bbox[2] + bbox[0], bbox[3]+ bbox[1]]
                 # label_idx = self.label_map[obj['category_id']] - 1
                 label_idx = obj['category_id']
-                # final_box = list(np.array(bbox) / scale)
+                
                 final_box = list( np.array(loc) / scale)
                 final_box.append(label_idx)
                 res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx]
@@ -92,7 +90,7 @@ class COCODetection(Dataset):
         """
         self.root = root
 
-        if image_set == None ^ annotation_json == None:
+        if (image_set == None and annotation_json == None) or (annotation_json and image_set)  :
             print(" Only one of (image_set, annotation json) should be None")
 
         if isinstance(image_set, str):
@@ -121,6 +119,32 @@ class COCODetection(Dataset):
     
     def __len__(self): 
         return len(self.ids)
+
+
+
+    def get_class_size(self):
+        """
+        Returns: 
+            class size (int): number of class in dataset
+        """
+        return len(self.coco.cats)
+
+    def get_class_map(self, save_path):
+        """
+        Args: 
+            save_path (string): class map save path
+        """
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        save_path = os.path.join(save_path, "label_map.txt")
+
+        print(f"save class map file to {save_path}")
+        with open(save_path, "w") as writefile:
+            for key in self.coco.cats.keys():
+                id_ = self.coco.cats[key]["id"]
+                name = self.coco.cats[key]["name"]
+                print(f"{id_}, {name}", file = writefile)        
     
     def pull_item(self, idx):
         """
@@ -132,10 +156,8 @@ class COCODetection(Dataset):
         """
         img_id = self.ids[idx]
         target = self.coco.imgToAnns[img_id]
-#         ann_ids = self.coco.getAnnIds(img_id)
-#         target = self.coco.loadAnns(ann_ids)
         img_path = os.path.join(self.image_folder, self.coco.loadImgs(img_id)[0]['file_name'])
-        assert os.path.exists(img_path), "loading image error"
+        assert os.path.exists(img_path), "image file not found : {}".format(img_path)
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         height, width, _ = img.shape

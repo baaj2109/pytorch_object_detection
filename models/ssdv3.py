@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as numpy
-from ssd import GraphPath
+from .ssd import GraphPath
 
 
 def initWithXavier(m: nn.Module):
@@ -104,8 +104,6 @@ class SSDV3(nn.Module):
                 y = x
                 
             if extras_from_base:
-                print("11",self.base[end_layer_index])
-                print("22",extras_from_base.name)
                 sub = getattr(self.base[end_layer_index], extras_from_base.name)
                 if extras_from_base.s1 < 0:
                     for layer in sub:

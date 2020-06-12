@@ -6,10 +6,12 @@ from tqdm import tqdm
 import tensorflow as tf
 import cv2
 
-from data import COCODetection, SSDAugmentation, COCOAnnotationTransform, detection_collate, BaseTransform
+from data import COCODetection, SSDAugmentation, COCOAnnotationTransform,\
+                 detection_collate, BaseTransform
 from loss import MultiBoxLoss
-from models import mobilenetv2, create_mobilenetv2_ssd_lite, PriorBox, mobilenetv3, create_mobilenetv3_ssd_lite
-from config import MOBILEV2_512, MOBILEV2_300
+from models import mobilenetv2, create_mobilenetv2_ssd_lite, PriorBox, \
+                   mobilenetv3, create_mobilenetv3_ssd_lite
+from config import  MOBILEV2_300, MOBILEV3_300
 
 import torch
 import torch.optim as optim
@@ -77,7 +79,6 @@ def load_tf_weights(args, state_dict):
 
 
 
-
 def train(args):
     create_time = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
     save_folder_path = os.path.join(args.save_folder, create_time)
@@ -85,7 +86,7 @@ def train(args):
     # n_classes = [20, 80][args.dataset == 'COCO']
     # n_classes = 91
 
-    if args.train_image_folder and args.val_image_folder and args.annotation: 
+    if not ((args.train_image_folder and args.val_image_folder) or args.annotation): 
         print("train/val image folder and annotation should not be None")
         return 
 
@@ -107,8 +108,10 @@ def train(args):
                                 transform = BaseTransform(img_size = args.image_size),
                                 target_transform = COCOAnnotationTransform())    
     
-    n_classes = train_dataset.get_class_number() + 1
+    n_classes = train_dataset.get_class_size() + 1
 
+    if args.class_map_path:
+        train_dataset.get_class_map(args.class_map_path)
 
 
     if args.model == "mobilenetv2":
@@ -127,9 +130,9 @@ def train(args):
         model = mobilenetv3(model_mode = args.model_mode,
                             n_classes = n_classes,
                             width_mult = args.width_mult,
-                            dropout_ratio = args.drout)
+                            dropout_ratio = args.dropout_ratio)
 
-        ssd = create_mobilenetv3_ssd_list(model, n_classes, model_mode = args.model_mode)
+        ssd = create_mobilenetv3_ssd_lite(model, n_classes, model_mode = args.model_mode)
 
     else:
         print("model structure only accept mobilenetv2 or mobilenetv3")
@@ -165,8 +168,13 @@ def train(args):
                              neg_overlap = 0.5,
                              encode_target = False)
     with torch.no_grad():
-        # prior_box = PriorBox(MOBILEV2_512)
-        prior_box = PriorBox(MOBILEV2_300)
+
+        if args.model == "mobilenetv2":
+            prior_box = PriorBox(MOBILEV2_300)
+
+        elif args.model == "mobilenetv3":
+            prior_box = PriorBox(MOBILEV3_300)
+
         priors = Variable(prior_box.forward())
         print("created default bbox")
 
@@ -175,7 +183,7 @@ def train(args):
     n_val = min(val_dataset.__len__(), 1000)
     global_step = 0
     val_global_step = 0
-    writer = SummaryWriter()
+    writer = SummaryWriter(args.summary_path)
     for epoch in range(args.epochs):
         mean_loss_conf = 0
         mean_loss_loc = 0
@@ -280,13 +288,13 @@ def parse_args():
     '''
     parser.add_argument("--model",
                         type = str,
-                        choice = ["mobilenetv2", "mobilenetv3"],
-                        default = "mobilenetv2"
+                        choices = ["mobilenetv2", "mobilenetv3"],
+                        default = "mobilenetv2",
                         help = "select basic model structure")
 
     parser.add_argument("--model-mode",
                         type = str,
-                        choice = ["LARGE", "SMALL"],
+                        choices = ["LARGE", "SMALL"],
                         default = "LARGE",
                         help = "only use for mobile net v3 structure")
 
@@ -295,10 +303,15 @@ def parse_args():
                         default = 1.0,
                         help = "multiply value to extent model width")
 
-    parser.add_argument('--dropout_ratio',
+    parser.add_argument('--dropout-ratio',
                         type = float,
                         default = 0.2,
                         help = "percentage of drop out ratio")
+
+    parser.add_argument('--summary-path',
+                        type = str,
+                        default = None,
+                        help = "path of tensorboard file ")
 
     '''
             dataset
@@ -322,18 +335,23 @@ def parse_args():
 
     parser.add_argument('--train-image-folder',
                         type = str, 
-                        default = "train2017",
+                        default = None, #"train2017",
                         help = 'path to train image')
 
     parser.add_argument('--val-image-folder',
                         type = str,
-                        default = 'val2017',
+                        default = None, # 'val2017',
                         help = 'path to validation image')
 
     parser.add_argument("--annotation",
                         type = str,
-                        default = "./annotation.json",  
+                        default = None, #"./annotation.json",  
                         help = 'path to annotation json file') 
+
+    parser.add_argument("--class-map-path",
+                        type = str,
+                        default = None,
+                        help = 'if not None, save class map to path')
 
     # parser.add_argument('--coco-label',
     #                     type = str,
@@ -400,5 +418,6 @@ if __name__ == '__main__':
     args = parse_args()
     train(args)
     print("done")
+
 
 

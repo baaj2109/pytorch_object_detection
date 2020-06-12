@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-from mobilenetv2 import InvertedResidual
-from mobilenetv3_v2 import mobilenetv3
-from ssdv3 import SSDV3
-from ssd import GraphPath
+from .mobilenetv2 import InvertedResidual
+from .mobilenetv3_v2 import mobilenetv3
+from .ssdv3 import SSDV3
+from .ssd import GraphPath
 from torchsummary import summary
 
 

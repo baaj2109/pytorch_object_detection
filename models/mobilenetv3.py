@@ -56,7 +56,7 @@ class Block(nn.Module):
                 nn.Conv2d(in_size, out_size, kernel_size = 1, stride = 1, padding = 0, bias = False),
                 nn.BatchNorm2d(out_size),
             )
-            
+
     def forward(self, x):
         out = self.nolinear1(self.bn1(self.conv1(x)))
         if self.output_status:
@@ -81,12 +81,12 @@ class mobilenetv3(nn.Module):
         self.bn1 = nn.BatchNorm2d(16)
         self.hs1 = hswish()
         self.bneck = nn.Sequential(
-            Block(3, 16, 16, 16, nn.ReLU(inplace=True), None, 1),
-            Block(3, 16, 64, 24, nn.ReLU(inplace=True), None, 2),
-            Block(3, 24, 72, 24, nn.ReLU(inplace=True), None, 1),
-            Block(5, 24, 72, 40, nn.ReLU(inplace=True), SeModule(40), 2),
-            Block(5, 40, 120, 40, nn.ReLU(inplace=True), SeModule(40), 1),
-            Block(5, 40, 120, 40, nn.ReLU(inplace=True), SeModule(40), 1),
+            Block(3, 16, 16, 16, nn.ReLU(inplace=False), None, 1),
+            Block(3, 16, 64, 24, nn.ReLU(inplace=False), None, 2),
+            Block(3, 24, 72, 24, nn.ReLU(inplace=False), None, 1),
+            Block(5, 24, 72, 40, nn.ReLU(inplace=False), SeModule(40), 2),
+            Block(5, 40, 120, 40, nn.ReLU(inplace=False), SeModule(40), 1),
+            Block(5, 40, 120, 40, nn.ReLU(inplace=False), SeModule(40), 1),
             Block(3, 40, 240, 80, hswish(), None, 2),
             Block(3, 80, 200, 80, hswish(), None, 1),
             Block(3, 80, 184, 80, hswish(), None, 1),

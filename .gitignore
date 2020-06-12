@@ -1,8 +1,10 @@
-/runs
+/runs*
 /experience*
+/class_map_few_dataset*
+*.txt
 *.pt
 *.h5
 *.onnx
-
+run_command_log
 *.ipynb_checkpoints
 *.ipynb
