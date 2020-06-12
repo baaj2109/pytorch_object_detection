@@ -6,7 +6,7 @@ from tqdm import tqdm
 import tensorflow as tf
 import cv2
 
-from data import customDetection, customAnnotationTransform, detection_collate, BaseTransform
+from data import customDetection, customAnnotationTransform, detection_collate, BaseTransform, COCODetection, COCOAnnotationTransform
 from loss import MultiBoxLossV3
 from models import mobilenetv3, ssd_mobilenetv3 
 
@@ -34,15 +34,22 @@ def main(args):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset = customDetection(root = args.image_root,
-                              json_path = args.annotation,
-                              transform = BaseTransform(img_size = args.image_size),
-                              target_transform = customAnnotationTransform())
+    # dataset = customDetection(root = args.image_root,
+    #                           json_path = args.annotation,
+    #                           transform = BaseTransform(img_size = args.image_size),
+    #                           target_transform = customAnnotationTransform())
+
+
+    dataset = COCODetection(root = args.image_root,
+                            annotation_json = args.annotation,
+                            transform = BaseTransform(img_size = args.image_size),
+                            target_transform = COCOAnnotationTransform)
 
     dataloader = DataLoader(dataset= dataset, batch_size = 4, shuffle= True, collate_fn = detection_collate)
 
     n_classes = dataset.get_class_number() + 1
     print("Detect class number: {}".format(n_classes))
+
     ## write category id to label name map
     dataset.get_class_map()
 
@@ -69,7 +76,7 @@ def main(args):
                                 weight_decay = args.weight_decay)   
 
     ssd = ssd.to(device)
-    criterion = MultiBoxLossV3(ssd.priors_cxcy, args.threshold, args.neg_pos_ratio ).to(device)
+    criterion = MultiBoxLossV3(ssd.priors_cxcy, args.threshold, args.neg_pos_ratio).to(device)
 
     print(f"epochs: {args.epochs}")
     for param_group in optimizer.param_groups:
@@ -227,4 +234,5 @@ if __name__ == '__main__':
     main(args)
     print("done")
     
-    
+
+

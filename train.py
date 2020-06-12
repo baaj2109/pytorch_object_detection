@@ -8,7 +8,7 @@ import cv2
 
 from data import COCODetection, SSDAugmentation, COCOAnnotationTransform, detection_collate, BaseTransform
 from loss import MultiBoxLoss
-from models import mobilenetv2, create_mobilenetv2_ssd_lite, SSD, PriorBox
+from models import mobilenetv2, create_mobilenetv2_ssd_lite, PriorBox, mobilenetv3, create_mobilenetv3_ssd_lite
 from config import MOBILEV2_512, MOBILEV2_300
 
 import torch
@@ -83,18 +83,57 @@ def train(args):
     save_folder_path = os.path.join(args.save_folder, create_time)
 
     # n_classes = [20, 80][args.dataset == 'COCO']
-    n_classes = 91
+    # n_classes = 91
 
-    model = mobilenetv2(n_classes = n_classes,
-                         width_mult = args.width_multi,
-                         round_nearest = 8, 
-                         dropout_ratio = args.dropout_ratio,
-                         use_batch_norm = True,)
+    if args.train_image_folder and args.val_image_folder and args.annotation: 
+        print("train/val image folder and annotation should not be None")
+        return 
 
-    ssd = create_mobilenetv2_ssd_lite(model, 
-                                      n_classes,
-                                      width_mult = args.width_multi,  
-                                      use_batch_norm = True)
+    train_dataset = COCODetection(root = args.root,
+                                  image_set = args.train_image_folder, 
+                                  annotation_json = args.annotation,
+                                  transform = SSDAugmentation(img_size = args.image_size),
+                                  # transform = BaseTransform(img_size = args.image_size),
+                                  target_transform = COCOAnnotationTransform())
+
+    train_dataloader = DataLoader(dataset = train_dataset, 
+                                  batch_size = args.batch_size,
+                                  shuffle = True, 
+                                  collate_fn = detection_collate)
+
+    val_dataset = COCODetection(root = args.root,
+                                image_set = args.val_image_folder,
+                                annotation_json = args.annotation,
+                                transform = BaseTransform(img_size = args.image_size),
+                                target_transform = COCOAnnotationTransform())    
+    
+    n_classes = train_dataset.get_class_number() + 1
+
+
+
+    if args.model == "mobilenetv2":
+        model = mobilenetv2(n_classes = n_classes,
+                             width_mult = args.width_mult,
+                             round_nearest = 8, 
+                             dropout_ratio = args.dropout_ratio,
+                             use_batch_norm = True,)
+
+        ssd = create_mobilenetv2_ssd_lite(model, 
+                                          n_classes,
+                                          width_mult = args.width_mult,  
+                                          use_batch_norm = True)
+
+    elif args.model == "mobilenetv3":
+        model = mobilenetv3(model_mode = args.model_mode,
+                            n_classes = n_classes,
+                            width_mult = args.width_mult,
+                            dropout_ratio = args.drout)
+
+        ssd = create_mobilenetv3_ssd_list(model, n_classes, model_mode = args.model_mode)
+
+    else:
+        print("model structure only accept mobilenetv2 or mobilenetv3")
+        return 
     print("builded ssd module")
 
     if GPU:
@@ -110,12 +149,13 @@ def train(args):
     elif args.pretrain_tfmodel and args.pretrain_tfmodel_weight_list:
         ssd_state_dict = ssd.state_dict()
         tf_weights_dict = load_tf_weights(args, ssd_state_dict)
-        ssd.load_state_dict( tf_weights_dict)
+        ssd.load_state_dict(tf_weights_dict)
 
 
     optimizer = optim.Adam(ssd.parameters(),
                            lr = args.learning_rate, 
                            weight_decay = args.weight_decay)
+
     criterion = MultiBoxLoss(n_classes,
                              overlap_thresh = args.overlap_threshold,
                              prior_for_matching = True,
@@ -129,22 +169,6 @@ def train(args):
         prior_box = PriorBox(MOBILEV2_300)
         priors = Variable(prior_box.forward())
         print("created default bbox")
-
-    train_dataset = COCODetection(root = args.root,
-                                  image_set = args.train_image_folder, 
-                                  transform = SSDAugmentation(img_size = args.image_size),
-                                  # transform = BaseTransform(img_size = args.image_size),
-                                  target_transform = COCOAnnotationTransform(args.coco_label))
-
-    train_dataloader = DataLoader(dataset = train_dataset, 
-                                  batch_size = args.batch_size,
-                                  shuffle = True, 
-                                  collate_fn = detection_collate)
-
-    val_dataset = COCODetection(root = args.root,
-                                image_set = args.val_image_folder,
-                                transform = BaseTransform(img_size = args.image_size),
-                                target_transform = COCOAnnotationTransform())
 
 
     n_train = min(train_dataset.__len__(), 5000)
@@ -254,7 +278,19 @@ def parse_args():
     '''
             model
     '''
-    parser.add_argument('--width-multi',
+    parser.add_argument("--model",
+                        type = str,
+                        choice = ["mobilenetv2", "mobilenetv3"],
+                        default = "mobilenetv2"
+                        help = "select basic model structure")
+
+    parser.add_argument("--model-mode",
+                        type = str,
+                        choice = ["LARGE", "SMALL"],
+                        default = "LARGE",
+                        help = "only use for mobile net v3 structure")
+
+    parser.add_argument('--width-mult',
                         type = float,
                         default = 1.0,
                         help = "multiply value to extent model width")
@@ -282,7 +318,7 @@ def parse_args():
     parser.add_argument('--root',
                         type = str,
                         default = "./",
-                        help = "path to coco dataset folder")
+                        help = "path to image dataset folder")
 
     parser.add_argument('--train-image-folder',
                         type = str, 
@@ -294,11 +330,16 @@ def parse_args():
                         default = 'val2017',
                         help = 'path to validation image')
 
-    parser.add_argument('--coco-label',
+    parser.add_argument("--annotation",
                         type = str,
-                        default = './coco_labels.txt',
-                        help = "label file contain two index and class name" \
-                               "file format origional coco index, relabel index, class name >> 1,1,person ")
+                        default = "./annotation.json",  
+                        help = 'path to annotation json file') 
+
+    # parser.add_argument('--coco-label',
+    #                     type = str,
+    #                     default = './coco_labels.txt',
+    #                     help = "label file contain two index and class name" \
+    #                            "file format origional coco index, relabel index, class name >> 1,1,person ")
 
     '''
             training 
@@ -359,4 +400,5 @@ if __name__ == '__main__':
     args = parse_args()
     train(args)
     print("done")
+
 

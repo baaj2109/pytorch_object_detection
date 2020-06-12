@@ -56,6 +56,7 @@ class Block(nn.Module):
                 nn.Conv2d(in_size, out_size, kernel_size = 1, stride = 1, padding = 0, bias = False),
                 nn.BatchNorm2d(out_size),
             )
+            
     def forward(self, x):
         out = self.nolinear1(self.bn1(self.conv1(x)))
         if self.output_status:
@@ -129,7 +130,7 @@ class mobilenetv3(nn.Module):
                     init.normal_(m.weight, std = 0.001)
                     if m.bias is not None:
                         init.constant_(m.bias, 0)
-                        
+
     def forward(self, x):
         outs = []
         out = self.hs1(self.bn1(self.conv1(x)))

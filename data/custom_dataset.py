@@ -84,13 +84,7 @@ class customDetection(Dataset):
                  json_path = "./annotation.json",
                  transform = None, 
                  target_transform = None):
-        """COCO datset for object detection 
-        Args:
-            root (str): path to coco dataset folder, all coco folder under this path
-            image_set (str): image set choice from [train2017 , val2017]
-            transform (object): image augment function zoo
-            target_transform (object) : function for process target bbox and label
-        """
+
         self.root = root
         self.coco = COCO(annotation_file= json_path)
         self.ids = list(self.coco.imgToAnns.keys())

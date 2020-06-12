@@ -79,7 +79,8 @@ class COCOAnnotationTransform(object):
 class COCODetection(Dataset):
     def __init__(self,
                  root = "./coco_dataset/",
-                 image_set = "train2017",
+                 image_set = None,  ##"train2017",
+                 annotation_json = None, 
                  transform = SSDAugmentation(), 
                  target_transform = COCOAnnotationTransform()):
         """COCO datset for object detection 
@@ -90,10 +91,19 @@ class COCODetection(Dataset):
             target_transform (object) : function for process target bbox and label
         """
         self.root = root
-        self.image_folder = os.path.join( root, image_set)
-        self.coco = COCO(annotation_file= os.path.join(root,
-                                                       "annotations_2017",
-                                                       "instances_{}.json".format(image_set)))
+
+        if image_set == None ^ annotation_json == None:
+            print(" Only one of (image_set, annotation json) should be None")
+
+        if isinstance(image_set, str):
+            self.image_folder = os.path.join( root, image_set)
+            self.coco = COCO(annotation_file= os.path.join(root,
+                                                           "annotations_2017",
+                                                           "instances_{}.json".format(image_set)))
+        elif isinstance(annotation_json, str):
+            self.image_folder = root
+            self.coco = COCO(annotation_file = annotation_json)
+
         self.ids = list(self.coco.imgToAnns.keys())
         self.transform = transform
         self.target_transform = target_transform
