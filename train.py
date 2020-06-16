@@ -183,7 +183,7 @@ def train(args):
     n_val = min(val_dataset.__len__(), 1000)
     global_step = 0
     val_global_step = 0
-    writer = SummaryWriter(args.summary_path)
+    writer = SummaryWriter(log_dir = args.summary_path)
     for epoch in range(args.epochs):
         mean_loss_conf = 0
         mean_loss_loc = 0
@@ -208,8 +208,8 @@ def train(args):
                 writer.add_scalar('Train/location_loss', float(loss_loc), global_step)
                 writer.add_scalar('Train/confidence_loss', float(loss_conf), global_step)
 
-                pbar.set_postfix( **{"location loss ": float(loss_loc),
-                                     "confidence loss ": float(loss_conf)})
+                pbar.set_postfix( **{"location loss": float(loss_loc),
+                                     "confidence loss": float(loss_conf)})
                 
                 mean_loss_loc += float(loss_loc)
                 mean_loss_conf += float(loss_conf)
@@ -226,8 +226,8 @@ def train(args):
                 inference_count += img.shape[0]
 
                 if inference_count > n_train: break
-            pbar.set_postfix( **{"location loss ": float(mean_loss_loc / n_train),
-                                 "confidence loss ": float(mean_loss_conf / n_train)})
+            pbar.set_postfix( **{"location loss": float(mean_loss_loc / n_train),
+                                 "confidence loss": float(mean_loss_conf / n_train)})
 
         ssd.eval()
         val_mean_loss_loc = 0
@@ -257,12 +257,15 @@ def train(args):
                                       'confidnece loss': float(loss_conf)})
                 vpbar.update(1)
 
-            vpbar.set_postfix( **{'location loss': float(val_mean_loss_loc / n_val),
+            vpbar.set_postfix(**{'location loss': float(val_mean_loss_loc / n_val),
                                  'confidnece loss': float(val_mean_loss_conf / n_val)})
             writer.add_scalar('Test/location_loss', float(val_mean_loss_loc / n_val), val_global_step)
             writer.add_scalar('Test/confidence_loss', float(val_mean_loss_conf/ n_val), val_global_step)
         val_global_step += 1
-        save_model(save_folder_path, ssd, epoch)
+
+
+        if epoch % 10 == 0 or epoch == args.epochs - 1:   
+            save_model(save_folder_path, ssd, epoch)
     writer.close()
 
 

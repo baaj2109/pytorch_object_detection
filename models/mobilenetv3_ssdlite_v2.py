@@ -28,7 +28,6 @@ def SeperableConv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padd
     )
 
 
-
 def add_extras():
     extras = nn.ModuleList([
         InvertedResidual(1280, 512, stride = 2, expand_ratio = 0.2),
@@ -37,6 +36,7 @@ def add_extras():
         InvertedResidual(256,   64, stride = 2, expand_ratio = 0.25)
     ])
     return extras
+
 
 def multibox(n_classes, model_mode, width_mult = 1.0):
 

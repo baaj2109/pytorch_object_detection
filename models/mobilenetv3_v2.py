@@ -374,13 +374,13 @@ class mobilenetv3(nn.Module):
 
 
     def forward(self, x):
-      out = self.init_conv(x)
-      out = self.block(out)
-      out = self.out_conv1(out)
-      batch, channels, height, width = out.size()
-      out = F.avg_pool2d(out, kernel_size=[10, 10])
-      out = self.out_conv2(out).view(batch, -1)
-      return out
+        out = self.init_conv(x)
+        out = self.block(out)
+        out = self.out_conv1(out)
+        batch, channels, height, width = out.size()
+        out = F.avg_pool2d(out, kernel_size=[10, 10])
+        out = self.out_conv2(out).view(batch, -1)
+        return out
 
 
 if __name__ == '__main__':
