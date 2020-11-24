@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
 
-class coco_base_dataset(Dataset):
+class CocoBaseDataset(Dataset):
 
     def __init__(self, image_root, annotation_json, transform, target_transform):
         self.image_root = image_root
@@ -109,27 +109,7 @@ class coco_base_dataset(Dataset):
         return target
 
 
-class cocoDataset(coco_base_dataset):
-
-    def __init__(self,
-                 root = "./coco_dataset",
-                 image_set = "train2017",
-                 transform = None,
-                 target_transform = None):
-    super().__init__(root,
-                     os.path.join(root, "annotations_2017", "instances_{}.json".format(image_set)),
-                     tarsform,
-                     target_transform
-    )
-
     
-
-
-
-
-
-
-
 
 
 

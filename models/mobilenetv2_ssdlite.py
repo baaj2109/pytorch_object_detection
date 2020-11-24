@@ -4,7 +4,7 @@ from .mobilenetv2 import mobilenetv2, InvertedResidual
 from .ssd import SSD, GraphPath
 
 
-def SeperableConv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padding = 0):
+def seperable_conv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padding = 0):
     """Replace Conv2d with a depthwise Conv2d and Pointwise Conv2d.
     """
     return nn.Sequential(
@@ -23,9 +23,9 @@ def SeperableConv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padd
                   bias = True),
     )
 
-class liteConv(nn.Module):
+class LiteConv(nn.Module):
     def __init__(self, in_channels, out_channels, stride):
-        super(liteConv, self).__init__()
+        super(LiteConv, self).__init__()
 
         hidden_dim = out_channels // 2        
         self.conv = nn.Sequential(
@@ -50,11 +50,11 @@ class liteConv(nn.Module):
 
 def add_extras():
     extras_layers = nn.ModuleList([
-        liteConv(1280, 512, stride = 2),
-        liteConv(512,  256, stride = 2),
-        liteConv(256,  256, stride = 2),
-        liteConv(256,  128, stride = 2)
-        # liteConv(256,   64, stride = 2)
+        LiteConv(1280, 512, stride = 2),
+        LiteConv(512,  256, stride = 2),
+        LiteConv(256,  256, stride = 2),
+        LiteConv(256,  128, stride = 2)
+        # LiteConv(256,   64, stride = 2)
     ])
     return extras_layers
 
@@ -63,31 +63,31 @@ def multibox(n_classes, width_mult = 1.0,):
     '''each output featureMap produce 6 result, >> mbox = 6 in each layer
     '''
     loc_layers = nn.ModuleList([
-        SeperableConv2d(in_channels = round(576 * width_mult),
+        seperable_conv2d(in_channels = round(576 * width_mult),
                         # out_channels = 6 * 4,
                         out_channels = 3 * 4,
                         kernel_size = 3, 
                         padding = 1),
-        SeperableConv2d(in_channels = 1280, out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 512,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 128,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 1280, out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 512,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 128,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
         # nn.Conv2d(in_channels = 64, out_channels = 6 * 4, kernel_size = 1),
     ])
     
     
     conf_layers = nn.ModuleList([
-        SeperableConv2d(in_channels = round(576 * width_mult),
+        seperable_conv2d(in_channels = round(576 * width_mult),
                         # out_channels = 6 * n_classes, 
                         out_channels = 3 * n_classes, 
                         kernel_size = 3, 
                         padding = 1),
-        SeperableConv2d(in_channels = 1280, out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 512,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 128,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 1280, out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 512,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 128,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
         # nn.Conv2d(in_channels = 64, out_channels = 6 * n_classes, kernel_size = 1),
     ])  
     return loc_layers, conf_layers

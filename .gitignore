@@ -8,3 +8,6 @@
 run_command_log
 *.ipynb_checkpoints
 *.ipynb
+*.mlmodel
+run.sh
+

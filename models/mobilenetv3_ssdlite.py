@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-from .mobilenetv3 import mobilenetv3
+from .mobilenetv3 import MobileNetv3
 from itertools import product as product
 from math import sqrt
 
@@ -23,13 +23,13 @@ def conv_1x1_bn(inp, oup, groups=1, activation=nn.ReLU6):
     )
 
 
-class add_extras(nn.Module):
+class AddExtras(nn.Module):
     """
     Additional convolutions to produce higher-level feature maps.
     """
 
     def __init__(self):
-        super(add_extras, self).__init__()
+        super(AddExtras, self).__init__()
 
         self.extra_convs = []
     
@@ -88,9 +88,9 @@ class add_extras(nn.Module):
         return conv8_2_feats, conv9_2_feats, conv10_2_feats, conv11_2_feats
 
 
-class multibox(nn.Module):
+class MultiBox(nn.Module):
     def __init__(self, n_classes):
-        super(multibox, self).__init__()
+        super(MultiBox, self).__init__()
 
         self.n_classes = n_classes
         n_boxes = {'conv4_3': 4, 'conv7': 6, 'conv8_2': 6,
@@ -125,7 +125,7 @@ class multibox(nn.Module):
     def forward(self, conv4_3_feats, conv7_feats, conv8_2_feats, conv9_2_feats, conv10_2_feats, conv11_2_feats):
         batch_size = conv4_3_feats.size(0)
         
-        ## bounding box multibox layer
+        ## bounding box MultiBox layer
         l_conv4_3 = self.loc_conv4_3(conv4_3_feats)  
         l_conv4_3 = l_conv4_3.permute(0, 2, 3, 1).contiguous()  
         l_conv4_3 = l_conv4_3.view(batch_size, -1, 4)  
@@ -150,7 +150,7 @@ class multibox(nn.Module):
         l_conv11_2 = l_conv11_2.permute(0, 2, 3, 1).contiguous()  
         l_conv11_2 = l_conv11_2.view(batch_size, -1, 4)          
 
-        ##  confidence multibox layer
+        ##  confidence MultiBox layer
         c_conv4_3 = self.cl_conv4_3(conv4_3_feats)  
         c_conv4_3 = c_conv4_3.permute(0, 2, 3, 1).contiguous()  
         c_conv4_3 = c_conv4_3.view(batch_size, -1,self.n_classes)  
@@ -181,16 +181,16 @@ class multibox(nn.Module):
 
 
 
-class ssd_mobilenetv3(nn.Module):
+class SSDMobilenetv3(nn.Module):
 
     def __init__(self, base, n_classes):
-        super(ssd_mobilenetv3, self).__init__()
+        super(SSDMobilenetv3, self).__init__()
 
         self.base = base
         self.n_classes = n_classes
 
-        self.aux_convs = add_extras()
-        self.pred_convs = multibox(n_classes)
+        self.aux_convs = AddExtras()
+        self.pred_convs = MultiBox(n_classes)
 
         self.rescale_factors = nn.Parameter(torch.FloatTensor(1, 672, 1, 1))
         nn.init.constant_(self.rescale_factors, 20)

@@ -46,7 +46,7 @@ def detection_collate(batch):
 
 
 
-class customAnnotationTransform(object):
+class CustomAnnotationTransform(object):
     """Transforms a COCO annotation into a Tensor of bbox coords and label index
     Initilized with a dictionary lookup of classnames to indexes
     """
@@ -78,7 +78,7 @@ class customAnnotationTransform(object):
         return res 
 
 
-class customDetection(Dataset):
+class CustomDetection(Dataset):
     def __init__(self,
                  root = "./image_folder",
                  json_path = "./annotation.json",
@@ -182,7 +182,7 @@ class customDetection(Dataset):
 
 if __name__ == '__main__':
     
-    dataset = customDetection(root = "/Users/kehwaweng/Documents/imageCrawler/Image-Downloader/",
+    dataset = CustomDetection(root = "/Users/kehwaweng/Documents/imageCrawler/Image-Downloader/",
                               json_path = "/Users/kehwaweng/Documents/imageCrawler/Image-Downloader/few_sample/few_sample_dataset.json",
                               transform = BaseTransform(img_size = 300),
                               target_transform = CustomAnnotationTransform())

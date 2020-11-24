@@ -9,8 +9,8 @@ import cv2
 from data import COCODetection, SSDAugmentation, COCOAnnotationTransform,\
                  detection_collate, BaseTransform
 from loss import MultiBoxLoss
-from models import mobilenetv2, create_mobilenetv2_ssd_lite, PriorBox, \
-                   mobilenetv3, create_mobilenetv3_ssd_lite
+from models import MobileNetv2, create_mobilenetv2_ssd_lite, PriorBox, \
+                   MobileNetv3, create_mobilenetv3_ssd_lite
 from config import  MOBILEV2_300, MOBILEV3_300
 
 import torch
@@ -115,7 +115,7 @@ def train(args):
 
 
     if args.model == "mobilenetv2":
-        model = mobilenetv2(n_classes = n_classes,
+        model = MobileNetv2(n_classes = n_classes,
                              width_mult = args.width_mult,
                              round_nearest = 8, 
                              dropout_ratio = args.dropout_ratio,
@@ -127,7 +127,7 @@ def train(args):
                                           use_batch_norm = True)
 
     elif args.model == "mobilenetv3":
-        model = mobilenetv3(model_mode = args.model_mode,
+        model = MobileNetv3(model_mode = args.model_mode,
                             n_classes = n_classes,
                             width_mult = args.width_mult,
                             dropout_ratio = args.dropout_ratio)

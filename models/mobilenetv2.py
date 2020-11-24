@@ -135,14 +135,14 @@ class InvertedResidual(nn.Module):
             return self.conv(x)
 
 
-class mobilenetv2(nn.Module):
+class MobileNetv2(nn.Module):
     def __init__(self, 
                  n_classes = 80,
                  width_mult = 1.,
                  round_nearest = 8, 
                  dropout_ratio = 0.2,
                  use_batch_norm = True,):
-        super(mobilenetv2, self).__init__()
+        super(MobileNetv2, self).__init__()
 
 
         """MobileNet V2 main class
@@ -223,7 +223,7 @@ class mobilenetv2(nn.Module):
 
 if __name__ == '__main__':
 
-    model = mobilenetv2()
+    model = MobileNetv2()
     summary(model, (3,512,512))
 
 

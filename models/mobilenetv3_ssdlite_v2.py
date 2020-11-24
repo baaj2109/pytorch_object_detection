@@ -8,7 +8,7 @@ from torchsummary import summary
 
 
 
-def SeperableConv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padding = 0):
+def seperable_conv2d(in_channels, out_channels, kernel_size = 1, stride = 1, padding = 0):
     """Replace Conv2d with a depthwise Conv2d and Pointwise Conv2d.
     """
     return nn.Sequential(
@@ -41,28 +41,28 @@ def add_extras():
 def multibox(n_classes, model_mode, width_mult = 1.0):
 
     loc_layers = nn.ModuleList([
-        SeperableConv2d(in_channels = round(288 * width_mult) if model_mode == "SMALL" 
+        seperable_conv2d(in_channels = round(288 * width_mult) if model_mode == "SMALL" 
                                                               else round(672 * width_mult),
                         out_channels = 6 * 4,
                         kernel_size = 3, 
                         padding = 1),
-        SeperableConv2d(in_channels = 1280, out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 512,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 1280, out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 512,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * 4, kernel_size = 3, padding = 1),
         nn.Conv2d(in_channels = 64, out_channels = 6 * 4, kernel_size = 1),
     ])
 
     conf_layers = nn.ModuleList([
-        SeperableConv2d(in_channels = round(288 * width_mult) if model_mode == "SMALL" 
+        seperable_conv2d(in_channels = round(288 * width_mult) if model_mode == "SMALL" 
                                                               else round(672 * width_mult),
                         out_channels = 6 * n_classes, 
                         kernel_size = 3, 
                         padding = 1),
-        SeperableConv2d(in_channels = 1280, out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 512,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
-        SeperableConv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),        
+        seperable_conv2d(in_channels = 1280, out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 512,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),
+        seperable_conv2d(in_channels = 256,  out_channels = 6 * n_classes, kernel_size = 3, padding = 1),        
         nn.Conv2d(in_channels = 64, out_channels = 6 * n_classes, kernel_size = 1),
     ])
     return loc_layers, conf_layers

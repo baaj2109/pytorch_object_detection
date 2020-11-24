@@ -6,9 +6,9 @@ from tqdm import tqdm
 import tensorflow as tf
 import cv2
 
-from data import customDetection, customAnnotationTransform, detection_collate, BaseTransform, COCODetection, COCOAnnotationTransform
+from data import CustomDetection, CustomAnnotationTransform, detection_collate, BaseTransform, COCODetection, COCOAnnotationTransform
 from loss import MultiBoxLossV3
-from models import mobilenetv3, ssd_mobilenetv3 
+from models import MobileNetv3, SSDMobilenetv3 
 
 import torch
 import torch.optim as optim
@@ -34,10 +34,10 @@ def main(args):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # dataset = customDetection(root = args.image_root,
+    # dataset = CustomDetection(root = args.image_root,
     #                           json_path = args.annotation,
     #                           transform = BaseTransform(img_size = args.image_size),
-    #                           target_transform = customAnnotationTransform())
+    #                           target_transform = CustomAnnotationTransform())
 
 
     dataset = COCODetection(root = args.image_root,
@@ -53,8 +53,8 @@ def main(args):
     ## write category id to label name map
     dataset.get_class_map()
 
-    model = mobilenetv3(n_classes = n_classes)
-    ssd = ssd_mobilenetv3(model, n_classes)
+    model = MobileNetv3(n_classes = n_classes)
+    ssd = SSDMobilenetv3(model, n_classes)
 
     if args.pretrain_model_path:
         ssd.load_state_dict( torch.load(args.pretrain_model_path))
